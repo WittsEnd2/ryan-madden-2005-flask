@@ -1,9 +1,29 @@
 from flask import Flask, render_template, request, jsonify, session
 import random
 import secrets
+import os
+from config import config
 
 app = Flask(__name__)
-app.secret_key = secrets.token_hex(16)
+
+# Load configuration based on environment
+env = os.environ.get('FLASK_ENV', 'development')
+app.config.from_object(config[env])
+
+# Fallback for development if no SECRET_KEY in environment
+if not app.config.get('SECRET_KEY'):
+    app.config['SECRET_KEY'] = secrets.token_hex(16)
+
+# Security headers
+@app.after_request
+def set_security_headers(response):
+    """Add security headers to all responses"""
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'DENY'
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+    response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+    response.headers['Content-Security-Policy'] = "default-src 'self'; style-src 'self' 'unsafe-inline'"
+    return response
 
 # NFL Teams (2005 era)
 TEAMS = {
@@ -291,4 +311,8 @@ def get_game_state():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    # Development server
+    host = os.environ.get('HOST', '0.0.0.0')
+    port = int(os.environ.get('PORT', 5000))
+    debug = os.environ.get('FLASK_ENV', 'development') == 'development'
+    app.run(debug=debug, host=host, port=port)
