@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Madden 2005 - Football Game</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <!-- Team Selection Screen -->
+        <div id="team-selection" class="screen active">
+            <div class="madden-header">
+                <h1>MADDEN NFL 2005</h1>
+                <p class="subtitle">Select Your Team</p>
+            </div>
+
+            <div class="team-grid">
+                {% for key, team in teams.items() %}
+                <div class="team-card" onclick="selectTeam('{{ key }}')">
+                    <div class="team-name">{{ team.name }}</div>
+                    <div class="team-rating">OVR: {{ team.rating }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="game-screen" class="screen">
+            <div class="game-header">
+                <div class="scoreboard">
+                    <div class="team-info player-team">
+                        <div class="team-name-display" id="player-team-name">PLAYER</div>
+                        <div class="score" id="player-score">0</div>
+                    </div>
+                    <div class="game-info">
+                        <div class="quarter">Q<span id="quarter">1</span></div>
+                        <div class="time" id="time">15:00</div>
+                        <div class="down-distance">
+                            <span id="down">1st</span> & <span id="yards-to-go">10</span>
+                        </div>
+                        <div class="field-pos">
+                            <span id="possession-indicator">YOUR</span> <span id="field-position">20</span>
+                        </div>
+                    </div>
+                    <div class="team-info cpu-team">
+                        <div class="team-name-display" id="cpu-team-name">CPU</div>
+                        <div class="score" id="cpu-score">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="field-display">
+                <div class="field">
+                    <div class="yard-marker" id="yard-marker"></div>
+                    <div class="football" id="football"></div>
+                </div>
+            </div>
+
+            <div class="playbook">
+                <div id="offensive-plays" class="play-selection">
+                    <h3>SELECT YOUR PLAY</h3>
+                    <div class="play-grid">
+                        <button class="play-btn run" onclick="selectPlay('hb_dive')">
+                            <div class="play-name">HB Dive</div>
+                            <div class="play-type">Run</div>
+                        </button>
+                        <button class="play-btn run" onclick="selectPlay('hb_toss')">
+                            <div class="play-name">HB Toss</div>
+                            <div class="play-type">Run</div>
+                        </button>
+                        <button class="play-btn pass" onclick="selectPlay('pa_pass')">
+                            <div class="play-name">Play Action</div>
+                            <div class="play-type">Pass</div>
+                        </button>
+                        <button class="play-btn pass" onclick="selectPlay('slants')">
+                            <div class="play-name">Slants</div>
+                            <div class="play-type">Pass</div>
+                        </button>
+                        <button class="play-btn pass" onclick="selectPlay('deep_post')">
+                            <div class="play-name">Deep Post</div>
+                            <div class="play-type">Pass</div>
+                        </button>
+                        <button class="play-btn pass" onclick="selectPlay('screen')">
+                            <div class="play-name">Screen</div>
+                            <div class="play-type">Pass</div>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="defensive-plays" class="play-selection" style="display: none;">
+                    <h3>SELECT YOUR DEFENSE</h3>
+                    <div class="play-grid">
+                        <button class="play-btn defense" onclick="selectPlay('cover_2')">
+                            <div class="play-name">Cover 2</div>
+                            <div class="play-type">Pass Defense</div>
+                        </button>
+                        <button class="play-btn defense" onclick="selectPlay('blitz')">
+                            <div class="play-name">Blitz</div>
+                            <div class="play-type">Pass Rush</div>
+                        </button>
+                        <button class="play-btn defense" onclick="selectPlay('4-3_normal')">
+                            <div class="play-name">4-3 Normal</div>
+                            <div class="play-type">Balanced</div>
+                        </button>
+                        <button class="play-btn defense" onclick="selectPlay('goal_line')">
+                            <div class="play-name">Goal Line</div>
+                            <div class="play-type">Run Defense</div>
+                        </button>
+                        <button class="play-btn defense" onclick="selectPlay('prevent')">
+                            <div class="play-name">Prevent</div>
+                            <div class="play-type">Deep Defense</div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="game-log-container">
+                <h3>GAME LOG</h3>
+                <div class="game-log" id="game-log">
+                    <div class="log-entry">Game Started - Good Luck!</div>
+                </div>
+            </div>
+
+            <div class="play-result" id="play-result" style="display: none;">
+                <div class="result-content">
+                    <div class="result-text" id="result-text"></div>
+                    <div class="play-details">
+                        <div>Offense: <span id="offensive-play-name"></span></div>
+                        <div>Defense: <span id="defensive-play-name"></span></div>
+                    </div>
+                    <button class="continue-btn" onclick="closeResult()">CONTINUE</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="game-over" class="screen">
+            <div class="game-over-content">
+                <h1 id="game-over-title">GAME OVER</h1>
+                <div class="final-score">
+                    <div class="final-team">
+                        <div id="final-player-team">PLAYER</div>
+                        <div id="final-player-score" class="final-score-number">0</div>
+                    </div>
+                    <div class="vs-divider">FINAL</div>
+                    <div class="final-team">
+                        <div id="final-cpu-team">CPU</div>
+                        <div id="final-cpu-score" class="final-score-number">0</div>
+                    </div>
+                </div>
+                <button class="new-game-btn" onclick="location.reload()">NEW GAME</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let gameState = null;
+        let playerTeam = null;
+        let cpuTeam = null;
+
+        async function selectTeam(teamKey) {
+            try {
+                const response = await fetch('/start_game', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ player_team: teamKey })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    playerTeam = data.player_team;
+                    cpuTeam = data.cpu_team;
+                    gameState = data.game_state;
+
+                    document.getElementById('player-team-name').textContent = playerTeam.name;
+                    document.getElementById('cpu-team-name').textContent = cpuTeam.name;
+
+                    switchScreen('team-selection', 'game-screen');
+                    updateGameDisplay();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to start game. Please try again.');
+            }
+        }
+
+        async function selectPlay(playKey) {
+            try {
+                const response = await fetch('/run_play', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ play: playKey })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    gameState = data.game_state;
+
+                    // Show play result
+                    document.getElementById('result-text').textContent = data.result;
+                    document.getElementById('offensive-play-name').textContent = data.offensive_play;
+                    document.getElementById('defensive-play-name').textContent = data.defensive_play;
+                    document.getElementById('play-result').style.display = 'flex';
+
+                    // Update game display
+                    updateGameDisplay();
+
+                    // Check for game over
+                    if (data.game_over) {
+                        setTimeout(() => {
+                            showGameOver();
+                        }, 2000);
+                    }
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to run play. Please try again.');
+            }
+        }
+
+        function closeResult() {
+            document.getElementById('play-result').style.display = 'none';
+        }
+
+        function updateGameDisplay() {
+            if (!gameState) return;
+
+            // Update scores
+            document.getElementById('player-score').textContent = gameState.player_score;
+            document.getElementById('cpu-score').textContent = gameState.cpu_score;
+
+            // Update game info
+            document.getElementById('quarter').textContent = gameState.quarter;
+
+            const minutes = Math.floor(gameState.time_remaining / 60);
+            const seconds = gameState.time_remaining % 60;
+            document.getElementById('time').textContent =
+                `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+            // Update down
+            const downText = ['1st', '2nd', '3rd', '4th'][gameState.down - 1] || '1st';
+            document.getElementById('down').textContent = downText;
+            document.getElementById('yards-to-go').textContent = gameState.yards_to_go;
+
+            // Update field position
+            const possessionText = gameState.possession === 'player' ? 'YOUR' : 'CPU';
+            document.getElementById('possession-indicator').textContent = possessionText;
+            document.getElementById('field-position').textContent =
+                Math.round(gameState.field_position);
+
+            // Update field visual
+            updateFieldPosition();
+
+            // Show appropriate playbook
+            if (gameState.possession === 'player') {
+                document.getElementById('offensive-plays').style.display = 'block';
+                document.getElementById('defensive-plays').style.display = 'none';
+            } else {
+                document.getElementById('offensive-plays').style.display = 'none';
+                document.getElementById('defensive-plays').style.display = 'block';
+            }
+
+            // Update game log
+            const logContainer = document.getElementById('game-log');
+            logContainer.innerHTML = '';
+            gameState.game_log.forEach(entry => {
+                const logEntry = document.createElement('div');
+                logEntry.className = 'log-entry';
+                logEntry.textContent = entry;
+                logContainer.appendChild(logEntry);
+            });
+        }
+
+        function updateFieldPosition() {
+            const fieldPos = gameState.field_position;
+            const percentage = (fieldPos / 100) * 100;
+            const football = document.getElementById('football');
+            football.style.left = `${percentage}%`;
+        }
+
+        function showGameOver() {
+            document.getElementById('final-player-team').textContent = playerTeam.name;
+            document.getElementById('final-cpu-team').textContent = cpuTeam.name;
+            document.getElementById('final-player-score').textContent = gameState.player_score;
+            document.getElementById('final-cpu-score').textContent = gameState.cpu_score;
+
+            if (gameState.player_score > gameState.cpu_score) {
+                document.getElementById('game-over-title').textContent = 'YOU WIN!';
+                document.getElementById('game-over-title').style.color = '#4CAF50';
+            } else if (gameState.player_score < gameState.cpu_score) {
+                document.getElementById('game-over-title').textContent = 'YOU LOSE';
+                document.getElementById('game-over-title').style.color = '#f44336';
+            } else {
+                document.getElementById('game-over-title').textContent = 'TIE GAME';
+                document.getElementById('game-over-title').style.color = '#FFC107';
+            }
+
+            switchScreen('game-screen', 'game-over');
+        }
+
+        function switchScreen(fromScreen, toScreen) {
+            document.getElementById(fromScreen).classList.remove('active');
+            document.getElementById(toScreen).classList.add('active');
+        }
+    </script>
+</body>
+</html>
